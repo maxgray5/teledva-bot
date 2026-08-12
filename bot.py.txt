@@ -1,0 +1,67 @@
+import os
+import random
+import string
+from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+
+# Токен бота — сюда вставь свой из BotFather
+TOKEN = "ТВОЙ_ТОКЕН_СЮДА"
+
+# Хранилище промокодов (в реальности лучше база данных)
+user_codes = {}
+
+def generate_code():
+    """Генерирует уникальный промокод вида TD-XXXX"""
+    letters = string.ascii_uppercase + string.digits
+    return "TD-" + ''.join(random.choices(letters, k=4))
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обработчик команды /start"""
+    # Создаём кнопку для отправки номера телефона
+    button = KeyboardButton("📱 Отправить номер телефона", request_contact=True)
+    reply_markup = ReplyKeyboardMarkup([[button]], resize_keyboard=True)
+
+    await update.message.reply_text(
+        "👋 Привет! Я бот ТелеДва.\n\n"
+        "Чтобы получить персональный промокод на скидку 28%, "
+        "нажми на кнопку ниже и отправь мне свой номер телефона.",
+        reply_markup=reply_markup
+    )
+
+async def contact_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обработчик полученного номера телефона"""
+    contact = update.message.contact
+    user_id = update.message.from_user.id
+    phone_number = contact.phone_number
+
+    # Генерируем промокод
+    code = generate_code()
+    user_codes[user_id] = {
+        "phone": phone_number,
+        "code": code
+    }
+
+    # Отправляем промокод
+    await update.message.reply_text(
+        f"✅ Отлично! Твой персональный промокод:\n\n"
+        f"<b>{code}</b>\n\n"
+        f"Покажи его в любом салоне ТелеДва и получи скидку 28% на защитную плёнку.\n\n"
+        f"📍 Наши салоны: https://teledva.tilda.ws/",
+        parse_mode="HTML"
+    )
+
+    # Здесь можно добавить отправку уведомления тебе в личный Telegram
+    # await context.bot.send_message(chat_id=ТВОЙ_ID, text=f"Новый клиент: {phone_number}, промокод: {code}")
+
+def main():
+    """Запуск бота"""
+    app = Application.builder().token(TOKEN).build()
+
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.CONTACT, contact_handler))
+
+    print("Бот запущен...")
+    app.run_polling(allowed_updates=[])
+
+if __name__ == "__main__":
+    main()
