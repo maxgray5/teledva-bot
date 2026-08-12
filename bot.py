@@ -5,7 +5,7 @@ from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
 # Токен бота — сюда вставь свой из BotFather
-TOKEN = "ТВОЙ_ТОКЕН_СЮДА"
+TOKEN = 8771127514:AAH0xHFZIY_e_vfUH8KjWb8NmQDwXk92p0c
 
 # Хранилище промокодов (в реальности лучше база данных)
 user_codes = {}
