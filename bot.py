@@ -29,7 +29,7 @@ def get_sheet():
 # ===== ПРОВЕРКА: получал ли пользователь промокод за последние 24 часа =====
 def can_get_promo(phone, sheet):
     records = sheet.get_all_values()
-    for row in records[1:]:  # Пропускаем заголовки
+    for row in records[1:]:
         if len(row) >= 3 and row[1] == phone:
             last_time_str = row[2]
             if last_time_str:
@@ -41,15 +41,14 @@ def can_get_promo(phone, sheet):
 # ===== ВЫДАЧА ПЕРВОГО СВОБОДНОГО ПРОМОКОДА ИЗ ТАБЛИЦЫ =====
 def assign_promo(phone, sheet):
     records = sheet.get_all_values()
-    # Идём по строкам, начиная со второй (первая — заголовки)
     for i, row in enumerate(records[1:], start=2):
-        if len(row) >= 1 and row[0]:  # Если в колонке A есть промокод
-            # Проверяем, что колонка B (телефон) пустая — промокод не выдан
+        if len(row) >= 1 and row[0]:
             if len(row) < 2 or not row[1]:
-                sheet.update(f'B{i}', phone)
-                sheet.update(f'C{i}', datetime.now().strftime("%Y-%m-%d %H:%M"))
+                # Исправленный вызов sheet.update
+                sheet.update(f'B{i}:B{i}', [[phone]])
+                sheet.update(f'C{i}:C{i}', [[datetime.now().strftime("%Y-%m-%d %H:%M")]])
                 return row[0]
-    return None  # Свободных промокодов нет
+    return None
 
 # ===== ОБРАБОТЧИК КОМАНДЫ /start =====
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
